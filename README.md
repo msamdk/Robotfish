@@ -23,5 +23,6 @@ Paper relavent for the research
 }
 ```
 
-scs
+This project aims to do the training using the latest YOLO v11 pose models. You can find all the necessary codes that i used in the next sections
+
 
