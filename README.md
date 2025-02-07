@@ -3,7 +3,8 @@
 
 
 This is a fish pose estimation project that is based on the Robotfish pose estimation dataset which is produced by the  Intelligent Biomimetic Design Laboratory (IBDLab) of Peking University.[`https://en.ibdl.pku.edu.cn/`](https://en.ibdl.pku.edu.cn/)
-Disclaimer: This image is generated using AI and not related to the actualt experimental setup. Its only for artistic purposes. If you need to see the actual experimental setup go to the paper cited below.
+
+(Disclaimer: This image is generated using AI and not related to the actualt experimental setup. Its only for artistic purposes. If you need to see the actual experimental setup go to the paper cited below.)
 Cheers!
 
 The source repository is from  @xjh19971.
