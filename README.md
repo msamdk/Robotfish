@@ -1,8 +1,6 @@
 # Robotfish pose estimation 
 ![Robotic Fish Setup](images/cover.png)
 
-[![Watch the video](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID/maxresdefault.jpg)]([https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID](https://www.youtube.com/watch?v=t0RAcr7csIM))
-
 
 This is a fish pose estimation project that is based on the Robotfish pose estimation dataset which is produced by the  Intelligent Biomimetic Design Laboratory (IBDLab) of Peking University.[`https://en.ibdl.pku.edu.cn/`](https://en.ibdl.pku.edu.cn/)
 
