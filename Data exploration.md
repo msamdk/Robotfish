@@ -369,5 +369,5 @@ print(f"All results and metrics saved in {config_output_dir}.")
 ```
 
 # Validation Results 
-![Robotic Fish Setup](Validation_results/val_batch2_labels.jpg)
-![Robotic Fish Setup](Validation_results/val_batch2_pred.jpg)
+![valres1](Validation_results_demo/val_batch2_labels.jpg)
+![valres2](Validation_results_demo/val_batch2_pred.jpg)
