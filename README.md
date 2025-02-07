@@ -1,5 +1,6 @@
 # Robotfish pose estimation 
-![Demo GIF](images/pose.gif)
+![Demo GIF](pose.gif)
+
 
 
 
