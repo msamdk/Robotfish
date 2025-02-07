@@ -370,8 +370,8 @@ print(f"All results and metrics saved in {config_output_dir}.")
 
 # Validation Results 
 <p align="center">
-  <img src="Validation_results_demo/val_batch2_labels.jpg" alt="Val Labels" width="45%">
-  <img src="Validation_results_demo/val_batch2_pred.jpg" alt="Val Predictions" width="45%">
+  <img src="Validation_results_demo/val_batch2_labels.jpg" alt="Val Labels batch 1" width="45%">
+  <img src="Validation_results_demo/val_batch2_pred.jpg" alt="Val Predictions batch 1" width="45%">
 </p>
 
 <p align="center">
