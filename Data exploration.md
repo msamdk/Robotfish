@@ -17,10 +17,264 @@ The data training was done from DTU HPC server GPU's
 }
 ```
 
-##loading the annotation file
+loading the annotation file
 ```python
 from pycocotools.coco import COCO
 
 annotation = path/trainImages.json"
 coco = COCO(annotation)
 ```
+Listing available categories
+```python
+categories = coco.loadCats(coco.getCatIds())
+category_names = [cat["name"] for cat in categories]
+print("Categories:", category_names)
+```
+
+Checking all image IDS (Optional)
+```python
+img_ids = coco.getImgIds()
+print(img_ids)
+#here the image ids are stored as strings not integers
+```
+
+confirming that the keys and image ids are in the same format
+```python
+print("Image IDs from annotations file:", image_ids[:5])
+print("Keys in coco.imgs:", list(coco.imgs.keys())[:5])
+```
+
+Visualiziing a single image in the training dataset
+```python
+#cisualizing a single image
+import os
+import cv2
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+%matplotlib inline
+
+# Define the image folder
+image_folder = path/training/labeledImages"
+
+#image ids are in string format
+image_id = image_ids[0]  # For example, "00089"
+print("Using image ID:", image_id)
+
+# Pass the image_id inside a list to ensure it's treated as a single element, 
+#otherwise it gives an error and its assumed as an array of elements (0,0,0,8,9)
+image_metadata = coco.loadImgs([image_id])[0]
+image_path = os.path.join(image_folder, image_metadata["file_name"])
+
+# Load image using OpenCV
+image = cv2.imread(image_path)
+if image is None:
+    raise FileNotFoundError(f"Image not found at path: {image_path}")
+
+# Convert image from BGR to RGB for matplotlib
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+# Display the image
+plt.figure(figsize=(5, 5))
+plt.imshow(image)
+plt.axis()
+plt.title(f"Image ID: {image_id}")
+plt.show()
+
+```
+
+Visualizing the bounding box annotation and the keypoints
+```python
+#visualizing annootations for a traininig image
+def visualize_annotations(image_id, coco):
+    # Get annotation ids for the given image id by wrapping image_id in a list.
+    ann_ids = coco.getAnnIds(imgIds=[image_id])
+    annotations = coco.loadAnns(ann_ids)
+
+    # Load image metadata by passing the image_id as a list and taking the first element.
+    img_metadata = coco.loadImgs([image_id])[0]
+    img_path = os.path.join(image_folder, img_metadata["file_name"])
+
+    # Read the image using OpenCV
+    img = cv2.imread(img_path)
+    if img is None:
+        raise FileNotFoundError(f"Image not found at path: {img_path}")
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    # Plot the image
+    plt.figure(figsize=(8, 8))
+    plt.imshow(img)
+    plt.axis("off")
+
+    # Draw bounding boxes and keypoints for each annotation
+    for ann in annotations:
+        bbox = ann.get("bbox")
+        keypoints = ann.get("keypoints", [])
+
+        # Draw the bounding box 
+        if bbox is not None:
+            x, y, w, h = bbox
+            plt.gca().add_patch(Rectangle((x, y), w, h, fill=False, edgecolor='red', linewidth=2))
+
+        # Draw keypoints if available
+        if keypoints:
+            # Iterate over keypoints in groups of 3 (x, y, visibility)
+            for i in range(0, len(keypoints), 3):
+                kp_x, kp_y, visibility = keypoints[i:i+3]
+                if visibility > 0:
+                    plt.scatter(kp_x, kp_y, c="blue", marker="o", s=40)
+
+    plt.title(f"Image ID {image_id}")
+    plt.show()
+
+# Run visualization with a valid image ID (for example, image_ids[8])
+visualize_annotations(image_ids[0], coco)
+
+
+```
+
+
+Converting COCO format to YOLO format
+```python
+import json
+import os
+
+# Load the JSON file
+json_path = path/training/trainImages.json"
+output_dir = path/training/yololabels"
+
+# Ensure output directory exists
+os.makedirs(output_dir, exist_ok=True)
+
+# Read the JSON file
+with open(json_path, "r") as f:
+    data = json.load(f)
+
+# Dictionary to store image sizes (if available)
+image_sizes = {}  # {image_id: (width, height)}
+
+# Process each annotation
+for annotation in data["annotations"]:
+    image_id = annotation["image_id"]
+    bbox = annotation["bbox"]
+    keypoints = annotation.get("keypoints", [])  # Get keypoints 
+    category_id = annotation["category_id"] - 1  # Convert to 0-based indexing for YOLO
+
+    # Bounding box values
+    x_min, y_min, width, height = bbox
+    x_center = x_min + width / 2
+    y_center = y_min + height / 2
+
+    # Default image size (update if real sizes are known)
+    img_width, img_height = image_sizes.get(image_id, (1280, 720))
+
+    # Normalize bbox values
+    x_center /= img_width
+    y_center /= img_height
+    width /= img_width
+    height /= img_height
+
+    # Normalize keypoints and include visibility
+    normalized_keypoints = []
+    for i in range(0, len(keypoints), 3):  # Every keypoint has (x, y, visibility)
+        kp_x = keypoints[i] / img_width
+        kp_y = keypoints[i + 1] / img_height
+        visibility = keypoints[i + 2]  # Keep visibility flag
+        normalized_keypoints.extend([kp_x, kp_y, visibility])
+
+    # Create YOLO pose annotation string
+    annotation_line = f"{category_id} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f} " \
+                      + " ".join([f"{kp:.6f}" for kp in normalized_keypoints]) + "\n"
+
+    # Save to a file
+    label_filename = os.path.join(output_dir, f"{image_id}.txt")
+    with open(label_filename, "a") as label_file:
+        label_file.write(annotation_line)
+
+print("Conversion complete! YOLO pose annotations saved in:", output_dir)
+```
+
+
+Train/ val split
+```python
+import os
+import shutil
+import random
+
+# Define paths
+dataset_path = path/training"
+images_path = os.path.join(dataset_path, "labeledImages")
+labels_path = os.path.join(dataset_path, "yololabels")
+
+# Output paths
+output_base = path/yolo_dataset"
+train_images = os.path.join(output_base, "train", "images")
+train_labels = os.path.join(output_base, "train", "labels")
+val_images = os.path.join(output_base, "val", "images")
+val_labels = os.path.join(output_base, "val", "labels")
+
+# Create necessary directories
+for path in [train_images, train_labels, val_images, val_labels]:
+    try:
+        os.makedirs(path, exist_ok=True)
+        print(f"Created directory: {path}")
+    except Exception as e:
+        print(f"Error creating directory {path}: {e}")
+
+# Get all image files
+image_files = [f for f in os.listdir(images_path) if f.endswith(('.jpg', '.png', '.jpeg'))]
+
+if not image_files:
+    print("No image files found in the source folder!")
+    exit()
+
+random.shuffle(image_files)  # Shuffle for randomness
+
+# Split 80% train, 20% validation
+split_index = int(len(image_files) * 0.8)
+train_files = image_files[:split_index]
+val_files = image_files[split_index:]
+
+# Function to move files
+def move_files(file_list, source_folder, dest_folder, ext):
+    for file in file_list:
+        src = os.path.join(source_folder, file)
+        dest = os.path.join(dest_folder, file)
+        if os.path.exists(src):
+            try:
+                shutil.copy(src, dest)
+                print(f"Copied {src} -> {dest}")
+            except Exception as e:
+                print(f"Error copying {src} to {dest}: {e}")
+        else:
+            print(f"File not found: {src}")
+
+# Move train images and labels
+move_files(train_files, images_path, train_images, '.jpg')
+move_files([f.rsplit('.', 1)[0] + '.txt' for f in train_files], labels_path, train_labels, '.txt')
+
+# Move validation images and labels
+move_files(val_files, images_path, val_images, '.jpg')
+move_files([f.rsplit('.', 1)[0] + '.txt' for f in val_files], labels_path, val_labels, '.txt')
+
+print("split successfull")
+print(f"Train images: {len(train_files)}")
+print(f"Validation images: {len(val_files)}")
+```
+
+Make a configuration .yaml file to indicate the relative paths for the train and val datasets and the class id, and keypoint details
+Find the yaml file at the repository
+
+# Dataset image paths 🚀
+train: train/images    # Training images folder 📸
+val: val/images        # Validation images folder 🧐
+test: test/images      # Test images folder ✅
+
+# Dataset information 📊
+nc: 1                  # Number of classes (1 class) 🔢
+names: ['0']           # Class names (here, a single class labeled '0') 🏷️
+
+# Keypoint details 🔑
+kpt_shape: [3, 3]      # Keypoint shape (e.g., 3 keypoints each with 3 attributes) 📏
+
+
+
