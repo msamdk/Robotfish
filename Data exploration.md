@@ -292,7 +292,7 @@ output_dir = path/yolo_dataset/results"
 os.makedirs(output_dir, exist_ok=True)
 
 # Define training parameters
-epochs = 100  # Fine-tuning epochs
+epochs = 300  # Fine-tuning epochs
 learning_rate = 0.001  # Learning rate
 batch_size = 32  # Batch size
 img_size = 640  # Image size
@@ -368,5 +368,6 @@ torch.cuda.empty_cache()
 print(f"All results and metrics saved in {config_output_dir}.")
 ```
 
-
-
+# Validation Results 
+![Robotic Fish Setup](Validation_results/val_batch2_labels.jpg)
+![Robotic Fish Setup](Validation_results/val_batch2_pred.jpg)
