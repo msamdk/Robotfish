@@ -264,17 +264,14 @@ print(f"Validation images: {len(val_files)}")
 Make a configuration .yaml file to indicate the relative paths for the train and val datasets and the class id, and keypoint details
 Find the yaml file at the repository
 
-# Dataset image paths 🚀
 train: train/images    # Training images folder 📸
 val: val/images        # Validation images folder 🧐
 test: test/images      # Test images folder ✅
 
-# Dataset information 📊
 nc: 1                  # Number of classes (1 class) 🔢
 names: ['0']           # Class names (here, a single class labeled '0') 🏷️
 
-# Keypoint details 🔑
-kpt_shape: [3, 3]      # Keypoint shape (e.g., 3 keypoints each with 3 attributes) 📏
+kpt_shape: [3, 3]      # Keypoint shape (e.g., 3 keypoints each with 3 attributes) 🔑
 
 
 
