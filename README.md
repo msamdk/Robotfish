@@ -1,5 +1,6 @@
 # Robotfish pose estimation 
-![Robotic Fish Setup](images/cover.png)
+![Demo GIF](images/Pose estimation using latest YOLO11-pose model.gif)
+
 
 
 This is a fish pose estimation project that is based on the Robotfish pose estimation dataset which is produced by the  Intelligent Biomimetic Design Laboratory (IBDLab) of Peking University.[`https://en.ibdl.pku.edu.cn/`](https://en.ibdl.pku.edu.cn/)
