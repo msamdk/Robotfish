@@ -138,59 +138,59 @@ Converting COCO format to YOLO format
 import json
 import os
 
-# Load the JSON file
-json_path = path/training/trainImages.json"
-output_dir = path/training/yololabels"
+# Load the COCO JSON annotation file
+json_path = f"/work3/msam/robotfish/Dataset/training/trainImages.json"
+output_dir = f"/work3/msam/robotfish/Dataset/training/yololabels"
 
-# Ensure output directory exists
 os.makedirs(output_dir, exist_ok=True)
 
-# Read the JSON file
+# Read COCO JSON file
 with open(json_path, "r") as f:
     data = json.load(f)
 
-# Dictionary to store image sizes (if available)
-image_sizes = {}  # {image_id: (width, height)}
+# Store correct image sizes (IDs are strings)
+image_sizes = {img["id"]: (img["width"], img["height"]) for img in data["images"]}
 
 # Process each annotation
 for annotation in data["annotations"]:
-    image_id = annotation["image_id"]
+    image_id = str(annotation["image_id"])  # Ensure ID is string for lookup
     bbox = annotation["bbox"]
-    keypoints = annotation.get("keypoints", [])  # Get keypoints 
+    keypoints = annotation.get("keypoints", [])
     category_id = annotation["category_id"] - 1  # Convert to 0-based indexing for YOLO
 
-    # Bounding box values
+    # Get actual image size from JSON
+    #width = 752, width = 480
+    if image_id not in image_sizes:
+        print(f"Warning: Image ID {image_id} not found in metadata. Skipping...")
+        continue
+    
+    img_width, img_height = image_sizes[image_id] 
+
+    # Convert COCO Bounding Box format [x_min, y_min, width, height] to YOLO format
     x_min, y_min, width, height = bbox
-    x_center = x_min + width / 2
-    y_center = y_min + height / 2
-
-    # Default image size (update if real sizes are known)
-    img_width, img_height = image_sizes.get(image_id, (1280, 720))
-
-    # Normalize bbox values
-    x_center /= img_width
-    y_center /= img_height
+    x_center = (x_min + width / 2) / img_width
+    y_center = (y_min + height / 2) / img_height
     width /= img_width
     height /= img_height
 
-    # Normalize keypoints and include visibility
+    # Normalize keypoints (x, y, visibility)
     normalized_keypoints = []
-    for i in range(0, len(keypoints), 3):  # Every keypoint has (x, y, visibility)
+    for i in range(0, len(keypoints), 3):  # Each keypoint has (x, y, visibility)
         kp_x = keypoints[i] / img_width
         kp_y = keypoints[i + 1] / img_height
-        visibility = keypoints[i + 2]  # Keep visibility flag
+        visibility = keypoints[i + 2]
         normalized_keypoints.extend([kp_x, kp_y, visibility])
 
     # Create YOLO pose annotation string
     annotation_line = f"{category_id} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f} " \
                       + " ".join([f"{kp:.6f}" for kp in normalized_keypoints]) + "\n"
 
-    # Save to a file
+    # Save to YOLO label file
     label_filename = os.path.join(output_dir, f"{image_id}.txt")
     with open(label_filename, "a") as label_file:
         label_file.write(annotation_line)
 
-print("Conversion complete! YOLO pose annotations saved in:", output_dir)
+print("Converted", output_dir)
 ```
 
 
