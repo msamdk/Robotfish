@@ -1,4 +1,4 @@
-# Data Preparation for training
+# Data Preparation and training YOLO pose estimation model
 The dataset contains training and test data folders which includes both images and videos
 In here i train the model using labeled images given in the source dataset
 The annotations are given in the COCO format as a JSON file. for the YOLO training we need to convert these annotations to YOLO compatible format. In the following codes there are stepwise approach to do the data exploration and the annotation conversion as well as the train and validation splits
