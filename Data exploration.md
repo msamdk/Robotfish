@@ -379,3 +379,46 @@ print(f"All results and metrics saved in {config_output_dir}.")
   <b>Val Predictions</b>
 </p>
 
+# Testing on new video of the multiple robot fishes swimming
+```python
+from ultralytics import YOLO
+import torch
+import os
+
+# Set the trained model path (update this to match your trained model location)
+trained_model_path = path/weights/best.pt"
+
+# Load the trained model
+model = YOLO(trained_model_path)
+
+# Set the input test video path
+
+test_video_path = path/2.avi"
+
+# Set output directory for results
+output_video_path = path/test2.mp4"
+
+# Run inference on the test video
+results = model.predict(
+    source=test_video_path,  # Input video file
+    save=True,               # Save output video with detections
+    save_txt=True,           # Save detection results as text files
+    save_conf=True,          # Save confidence scores
+    device=0,                # Use GPU 
+    conf=0.5,                # Confidence threshold
+    imgsz=640,               # Image size
+    show=False,              # Set to True to display live inference
+    project=os.path.dirname(output_video_path),  # Directory to save results
+    name=os.path.basename(output_video_path).split('.')[0]  # Folder name
+)
+
+print(f"video saved at: {output_video_path}")
+
+# Free GPU memory
+del model
+torch.cuda.empty_cache()
+```
+
+# Object tracking with YOLO default tracker. You can try different tracking algorithms (eg - Bytetrack)
+
+
