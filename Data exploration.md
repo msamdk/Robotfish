@@ -386,17 +386,17 @@ import torch
 import os
 
 # Set the trained model path (update this to match your trained model location)
-trained_model_path = path/weights/best.pt"
+trained_model_path = "path/weights/best.pt"
 
 # Load the trained model
 model = YOLO(trained_model_path)
 
 # Set the input test video path
 
-test_video_path = path/2.avi"
+test_video_path = "path/2.avi"
 
 # Set output directory for results
-output_video_path = path/test2.mp4"
+output_video_path = "path/test2.mp4"
 
 # Run inference on the test video
 results = model.predict(
