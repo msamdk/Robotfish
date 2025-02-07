@@ -6,9 +6,9 @@ The source repository is from  @xjh19971.
 
 Paper relavent for the research
 
-## Citation
+## Link to the paper
 [IEEE/CAA Journal of Automatica Sinica](https://ieeexplore-ieee-org.proxy.findit.cvt.dk/document/9530612)
-
+## Citation
 ```bibtex
 @ARTICLE{9530612,
   author={Zhang, Tianhao and Xiao, Jiuhong and Li, Liang and Wang, Chen and Xie, Guangming},
@@ -21,5 +21,7 @@ Paper relavent for the research
   keywords={Deep learning;Tracking;Fuses;Robot kinematics;Pose estimation;Solids;Real-time systems;Deep neural networks;formation control;multiple fish-like robots;pose estimation;pose tracking},
   doi={10.1109/JAS.2021.1004228}
 }
+```
 
+scs
 
