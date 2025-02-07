@@ -1,5 +1,5 @@
 # Robotfish pose estimation 
-![Demo GIF](images/Pose estimation using latest YOLO11-pose model.gif)
+![Demo GIF](images/pose.gif)
 
 
 
