@@ -432,14 +432,14 @@ import torch
 import os
 
 # Your custom trained pose esimtation model path
-trained_model_path = "/work3/msam/robotfish/yolo_dataset/results/finetune_epoch300_batch32_lr0.001/finetune_results/weights/best.pt"
+trained_model_path = "path/weights/best.pt"
 
 # load the trained model
 model = YOLO(trained_model_path)
 
 # test video path and output path
-video_path = "/work3/msam/robotfish/Dataset/training/unlabeledVideos/1.avi"
-output_video_path = "/work3/msam/robotfish/yolo_dataset/results/test4.mp4"
+video_path = "path/unlabeledVideos/1.avi"
+output_video_path = "path/test4.mp4"
 
 # Open the video file
 cap = cv2.VideoCapture(video_path)
