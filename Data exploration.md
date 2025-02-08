@@ -422,3 +422,108 @@ torch.cuda.empty_cache()
 # Object tracking with YOLO default tracker. You can try different tracking algorithms (eg - Bytetrack)
 
 
+
+```python
+from collections import defaultdict
+import cv2
+import numpy as np
+from ultralytics import YOLO
+import torch
+import os
+
+# Your custom trained pose esimtation model path
+trained_model_path = "/work3/msam/robotfish/yolo_dataset/results/finetune_epoch300_batch32_lr0.001/finetune_results/weights/best.pt"
+
+# load the trained model
+model = YOLO(trained_model_path)
+
+# test video path and output path
+video_path = "/work3/msam/robotfish/Dataset/training/unlabeledVideos/1.avi"
+output_video_path = "/work3/msam/robotfish/yolo_dataset/results/test4.mp4"
+
+# Open the video file
+cap = cv2.VideoCapture(video_path)
+
+# Get video properties
+fps = int(cap.get(cv2.CAP_PROP_FPS))
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))  # Get total frames
+
+# Check if video opened successfully
+if not cap.isOpened():
+    print("Error: Could not open video file.")
+    exit()
+
+print(f"Video opened: {video_path}, Total Frames: {total_frames}, FPS: {fps}")
+
+# Define video writer to save the output
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for .mp4 format
+out = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
+
+# Store the track history
+track_history = defaultdict(lambda: [])
+
+# Reduce GPU load - to prevent memory errors (or sudden crashes in kernal)
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
+
+frame_count = 0  # Track number of frames processed
+
+# Run tracking
+with torch.no_grad():  # Disable gradient calculations to save memory
+    while cap.isOpened():
+        # Read a frame from the video
+        success, frame = cap.read()
+
+        # Ensure video frame advances correctly
+        frame_count += 1
+        print(f"Processing frame {frame_count}/{total_frames}")  # Debug output
+
+        if not success:
+            print("End of video reached or error in frame reading.")
+            break  # End of video
+
+        # Run YOLOv11 tracking on the frame
+        results = model.track(frame, persist=True, device=device, imgsz=416, conf=0.5)
+
+        # Check if results exist
+        if results and results[0] is not None:
+            # Extract tracking info
+            boxes = results[0].boxes.xywh.cpu().numpy()  # Get bounding boxes (x, y, w, h)
+            track_ids = results[0].boxes.id  # Track IDs
+
+            if track_ids is not None:  # If tracking IDs exist
+                track_ids = track_ids.int().cpu().tolist()
+
+                # Annotate frame with detection results
+                annotated_frame = results[0].plot()
+
+                # Draw tracking lines
+                for box, track_id in zip(boxes, track_ids):
+                    x, y, w, h = box  # Extract bounding box
+                    center_x, center_y = int(x), int(y)  # Get center coordinates
+
+                    # Store track history
+                    track = track_history[track_id]
+                    track.append((center_x, center_y))  # Store the center point of the fish
+                    if len(track) > 10:  # Reduce track length to save memory
+                        track.pop(0)
+
+                    # Convert tracking points to a polyline
+                    points = np.array(track, dtype=np.int32).reshape((-1, 1, 2))
+                    cv2.polylines(annotated_frame, [points], isClosed=False, color=(0, 255, 255), thickness=2)
+
+                # Write the frame to the output video
+                out.write(annotated_frame)
+
+
+        # **Clear memory after every frame to prevent memory leak**
+        del results
+        torch.cuda.empty_cache()
+
+# Release resources
+cap.release()
+out.release()
+cv2.destroyAllWindows()
+```
